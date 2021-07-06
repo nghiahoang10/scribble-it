@@ -10,10 +10,10 @@
 
 <body>
     <h1>Scribble It</h1>
-    <div class="username">
-        <input type="text" class="username-input">
-    </div>
-    <form action="">
+    <form action="/game" method="POST">
+        <div class="username">
+            <input type="text" class="username-input" name="username" required>
+        </div>
         <div class="role">
             <span>
                 <input type="radio" id="admin" name="role" value="admin">
