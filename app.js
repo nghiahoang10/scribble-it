@@ -6,6 +6,7 @@ const path = require('path');
 const bodyParser = require('body-parser');
 const port = process.env.PORT || 3000;
 
+var players = [];
 var username;
 var role;
 
@@ -19,6 +20,7 @@ app.get('/', (req, res) => {
 app.post('/game', (req, res) => {
     username = req.body.username;
     role = req.body.role;
+    players.push({ username: username, score: 0 });
     if (role == 'admin') {
         res.sendFile(path.join(__dirname, 'public/admin.html'));
     } else if (role == 'player') {
@@ -29,6 +31,7 @@ app.post('/game', (req, res) => {
 io.on('connection', (socket) => {
     console.log('A user connected');
     socket.emit('set username', { username: username });
+    io.emit('players list', players);
     socket.on('mouse', (data) => {
         socket.broadcast.emit('mouse', data);
     });

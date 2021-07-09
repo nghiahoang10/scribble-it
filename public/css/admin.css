@@ -208,3 +208,38 @@ h1 {
 .sender {
 	font-weight: bold;
 }
+
+#scoreboard {
+	position: fixed;
+	overflow: auto;
+	width: 15vw;
+	height: 60vh;
+	border: 2px solid black;
+	left: 1vw;
+	top: 18vh;
+}
+
+.player {
+	display: flex;
+	align-items: center;
+	height: 40px;
+	font-size: 20px;
+	color: white;
+	padding-left: 10px;
+}
+
+.red-player {
+	background-color: red;
+}
+
+.green-player {
+	background-color: green;
+}
+
+.blue-player {
+	background-color: blue;
+}
+
+.purple-player {
+	background-color: purple;
+}

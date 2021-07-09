@@ -8,6 +8,9 @@ var canvasHeight = document.getElementById('canvas').clientHeight;
 var form = document.getElementById('form');
 var input = document.getElementById('input');
 var chatlist = document.getElementById('chatlist');
+var scoreboard = document.getElementById('scoreboard');
+var players;
+var currentNumPlayers = 0;
 
 function setup() {
     canvas = createCanvas(canvasWidth, canvasHeight);
@@ -114,6 +117,26 @@ socket.on('set username', function (username) {
         myUsername = username.username;
     }
 });
+
+socket.on('players list', function (data) {
+    players = data;
+    for (var i = currentNumPlayers; i < players.length; i++) {
+        var newPlayer = document.createElement('div');
+        newPlayer.textContent = players[i].username + ': ' + players[i].score;
+        newPlayer.classList.add('player');
+        if (i % 4 == 0) {
+            newPlayer.classList.add('red-player');
+        } else if (i % 4 == 1) {
+            newPlayer.classList.add('green-player');
+        } else if (i % 4 == 2) {
+            newPlayer.classList.add('blue-player');
+        } else if (i % 4 == 3) {
+            newPlayer.classList.add('purple-player');
+        }
+        scoreboard.appendChild(newPlayer);
+    }
+    currentNumPlayers = players.length;
+})
 
 form.addEventListener('submit', function (e) {
     e.preventDefault();
