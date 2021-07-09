@@ -10,9 +10,44 @@
 
 <body>
     <h1>Scribble It</h1>
-    <div id="game">
+    <div id="topbar"></div>
+    <div id="canvas-wrapper">
         <div id="canvas"></div>
     </div>
+    <div id="panel">
+        <button id="red" class="color"></button>
+        <button id="orange" class="color"></button>
+        <button id="yellow" class="color"></button>
+        <button id="green" class="color"></button>
+        <button id="blue" class="color"></button>
+        <button id="brown" class="color"></button>
+        <button id="purple" class="color"></button>
+        <button id="black" class="color clicked"></button>
+        <button id="white" class="color"></button>
+        <button id="small" class="strokeWidth clicked">
+            <div id="small"></div>
+        </button>
+        <button id="medium" class="strokeWidth">
+            <div id="medium"></div>
+        </button>
+        <button id="large" class="strokeWidth">
+            <div id="large"></div>
+        </button>
+        <button id="xlarge" class="strokeWidth">
+            <div id="xlarge"></div>
+        </button>
+    </div>
+    <div id="chat">
+        <div id="chatbox">
+            <ul id="chatlist"></ul>
+        </div>
+        <form id="form">
+            <input id="input" type="text">
+        </form>
+    </div>
+    <script src="https://code.jquery.com/jquery-1.12.4.js"
+        integrity="sha256-Qw82+bXyGq6MydymqBxNPYTaUXXq7c8v3CwiYwLLNXU=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.4.0/lib/p5.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script src="js/admin.js"></script>
 </body>

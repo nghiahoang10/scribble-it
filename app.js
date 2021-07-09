@@ -6,6 +6,9 @@ const path = require('path');
 const bodyParser = require('body-parser');
 const port = process.env.PORT || 3000;
 
+var username;
+var role;
+
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -14,19 +17,26 @@ app.get('/', (req, res) => {
 });
 
 app.post('/game', (req, res) => {
-    var username = req.body.username;
-    var role = req.body.role;
+    username = req.body.username;
+    role = req.body.role;
     if (role == 'admin') {
         res.sendFile(path.join(__dirname, 'public/admin.html'));
     } else if (role == 'player') {
         res.sendFile(path.join(__dirname, 'public/player.html'));
     }
-})
+});
 
 io.on('connection', (socket) => {
     console.log('A user connected');
-})
+    socket.emit('set username', { username: username });
+    socket.on('mouse', (data) => {
+        socket.broadcast.emit('mouse', data);
+    });
+    socket.on('chat message', data => {
+        io.emit('chat message', data);
+    });
+});
 
 http.listen(port, () => {
     console.log(`Listening on port ${port}`);
-})
+});
