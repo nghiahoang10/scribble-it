@@ -96,14 +96,6 @@ function changeStrokeWidth(event) {
         source.parentElement.classList.add('clicked');
 }
 
-form.addEventListener('submit', function (e) {
-    e.preventDefault();
-    if (input.value) {
-        socket.emit('chat message', { msg: input.value, sender: myUsername });
-        input.value = '';
-    }
-});
-
 socket.on('chat message', function (data) {
     var newMsg = document.createElement('li');
     var sender = document.createElement('span');
@@ -121,9 +113,15 @@ socket.on('set username', function (username) {
     if (!myUsername) {
         myUsername = username.username;
     }
-    console.log(myUsername);
 });
 
+form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (input.value) {
+        socket.emit('chat message', { msg: input.value, sender: myUsername });
+        input.value = '';
+    }
+});
 document.getElementById('red').addEventListener('click', changeColor);
 document.getElementById('yellow').addEventListener('click', changeColor);
 document.getElementById('blue').addEventListener('click', changeColor);
