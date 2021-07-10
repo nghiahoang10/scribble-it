@@ -177,6 +177,7 @@ h1 {
 	height: 50vh;
 	border: 2px solid black;
 	border-radius: 10px;
+	overflow-wrap: break-word;
 }
 
 #form {
