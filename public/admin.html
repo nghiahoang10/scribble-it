@@ -10,9 +10,25 @@
 
 <body>
     <h1>Scribble It</h1>
-    <div id="topbar"></div>
-    <div id="canvas-wrapper">
-        <div id="canvas"></div>
+    <div id="topbar">
+        <div id="clock"></div>
+        <div id="round"></div>
+        <div id="word">_________</div>
+    </div>
+    <div class="container">
+        <div id="scoreboard"></div>
+        <div id="canvas-wrapper">
+            <div id="canvas"></div>
+
+        </div>
+        <div id="chat">
+            <div id="chatbox">
+                <ul id="chatlist"></ul>
+            </div>
+            <form id="form">
+                <input id="input" type="text">
+            </form>
+        </div>
     </div>
     <div id="panel">
         <button id="red" class="color"></button>
@@ -36,15 +52,6 @@
         <button id="xlarge" class="strokeWidth">
             <div id="xlarge"></div>
         </button>
-    </div>
-    <div id="scoreboard"></div>
-    <div id="chat">
-        <div id="chatbox">
-            <ul id="chatlist"></ul>
-        </div>
-        <form id="form">
-            <input id="input" type="text">
-        </form>
     </div>
     <script src="https://code.jquery.com/jquery-1.12.4.js"
         integrity="sha256-Qw82+bXyGq6MydymqBxNPYTaUXXq7c8v3CwiYwLLNXU=" crossorigin="anonymous"></script>

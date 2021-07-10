@@ -1,5 +1,4 @@
 var socket = io();
-var myUsername;
 var brushColor = '#000';
 var strokeWidth = 5;
 var canvas;
@@ -7,10 +6,12 @@ var canvasWidth = document.getElementById('canvas').clientWidth;
 var canvasHeight = document.getElementById('canvas').clientHeight;
 var form = document.getElementById('form');
 var input = document.getElementById('input');
+var chatbox = document.getElementById('chatbox');
 var chatlist = document.getElementById('chatlist');
 var scoreboard = document.getElementById('scoreboard');
 var players = [];
-var currentNumPlayers = 0;
+var myUsername;
+var myColor;
 
 function setup() {
     canvas = createCanvas(canvasWidth, canvasHeight);
@@ -102,19 +103,24 @@ function changeStrokeWidth(event) {
 socket.on('chat message', function (data) {
     var newMsg = document.createElement('li');
     var sender = document.createElement('span');
-    var msg = document.createElement('msg');
+    var msg = document.createElement('span');
     sender.textContent = data.sender;
     sender.classList.add('sender');
+    sender.style.color = data.color;
     newMsg.appendChild(sender);
     msg.textContent = ': ' + data.msg;
     newMsg.appendChild(msg);
     newMsg.classList.add('message');
     chatlist.appendChild(newMsg);
+    chatbox.scrollTo(0, chatbox.scrollHeight);
 });
 
-socket.on('set username', function (username) {
+socket.on('set username', function (data) {
     if (!myUsername) {
-        myUsername = username.username;
+        myUsername = data.username;
+    }
+    if (!myColor) {
+        myColor = data.color;
     }
 });
 
@@ -142,14 +148,28 @@ socket.on('players list', function (data) {
     players = data;
 });
 
+socket.on('player joined', function (data) {
+    var signal = document.createElement('li');
+    signal.textContent = data + ' joined';
+    signal.classList.add('joined')
+    chatlist.appendChild(signal);
+    chatbox.scrollTo(0, chatbox.scrollHeight);
+});
+
 socket.on('player left', function (data) {
-    console.log(data);
-})
+    var signal = document.createElement('li');
+    signal.textContent = data + ' left';
+    signal.classList.add('left')
+    chatlist.appendChild(signal);
+    chatbox.scrollTo(0, chatbox.scrollHeight);
+});
+
+
 
 form.addEventListener('submit', function (e) {
     e.preventDefault();
     if (input.value) {
-        socket.emit('chat message', { msg: input.value, sender: myUsername });
+        socket.emit('chat message', { msg: input.value, sender: myUsername, color: myColor });
         input.value = '';
     }
 });

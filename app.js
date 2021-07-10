@@ -10,6 +10,7 @@ const COLOR = ['#FF0000', '#00FF00', '#0000FF', '#800080', '#964B00', '#00b3ff',
 var players = [];
 var username;
 var role;
+var color;
 var colorTrack = 0;
 
 app.use(express.static(path.join(__dirname, 'public')));
@@ -22,7 +23,8 @@ app.get('/', (req, res) => {
 app.post('/game', (req, res) => {
     username = req.body.username;
     role = req.body.role;
-    players.push({ username: username, color: COLOR[colorTrack++ % 8], score: 0 });
+    color = COLOR[colorTrack++ % 8];
+    players.push({ username: username, color: color, score: 0 });
     if (role == 'admin') {
         res.sendFile(path.join(__dirname, 'public/admin.html'));
     } else if (role == 'player') {
@@ -31,10 +33,11 @@ app.post('/game', (req, res) => {
 });
 
 io.on('connection', (socket) => {
-    socket.emit('set username', { username: username });
+    socket.emit('set username', { username: username, color: color });
     socket.username = username;
     console.log(`${socket.username} connected`);
     io.emit('players list', players);
+    io.emit('player joined', socket.username);
     socket.on('mouse', (data) => {
         socket.broadcast.emit('mouse', data);
     });
