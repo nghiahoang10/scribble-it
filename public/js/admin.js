@@ -100,6 +100,9 @@ function changeStrokeWidth(event) {
         source.parentElement.classList.add('clicked');
 }
 
+/*data.sender: sender
+  data.msg: message
+  data.color: color of sender*/
 socket.on('chat message', function (data) {
     var newMsg = document.createElement('li');
     var sender = document.createElement('span');
@@ -115,6 +118,8 @@ socket.on('chat message', function (data) {
     chatbox.scrollTo(0, chatbox.scrollHeight);
 });
 
+/*data.username: username of player
+  data.color: assigned color of player*/
 socket.on('set username', function (data) {
     if (!myUsername) {
         myUsername = data.username;
@@ -124,6 +129,10 @@ socket.on('set username', function (data) {
     }
 });
 
+/*data: array of objects
+  data[i].username: username of player i
+  data[i].color: assigned color of player i
+  data[i].score: assigned score of player i*/
 socket.on('players list', function (data) {
     for (var i = 0; i < data.length; i++) {
         if (!players.find(function (player) {
@@ -148,6 +157,7 @@ socket.on('players list', function (data) {
     players = data;
 });
 
+/*data: username of joined player*/
 socket.on('player joined', function (data) {
     var signal = document.createElement('li');
     signal.textContent = data + ' joined';
@@ -156,6 +166,7 @@ socket.on('player joined', function (data) {
     chatbox.scrollTo(0, chatbox.scrollHeight);
 });
 
+/*data: username of left player*/
 socket.on('player left', function (data) {
     var signal = document.createElement('li');
     signal.textContent = data + ' left';

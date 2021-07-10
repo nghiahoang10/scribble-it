@@ -41,6 +41,9 @@ io.on('connection', (socket) => {
     socket.on('mouse', (data) => {
         socket.broadcast.emit('mouse', data);
     });
+    /*data.sender: sender
+    data.msg: message
+    data.color: color of sender*/
     socket.on('chat message', data => {
         io.emit('chat message', data);
     });
