@@ -6,9 +6,11 @@ const path = require('path');
 const bodyParser = require('body-parser');
 const port = process.env.PORT || 3000;
 
+const COLOR = ['#FF0000', '#00FF00', '#0000FF', '#800080', '#964B00', '#00b3ff', '#ff00c8', '#ff6600'];
 var players = [];
 var username;
 var role;
+var colorTrack = 0;
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -20,7 +22,7 @@ app.get('/', (req, res) => {
 app.post('/game', (req, res) => {
     username = req.body.username;
     role = req.body.role;
-    players.push({ username: username, score: 0 });
+    players.push({ username: username, color: COLOR[colorTrack++ % 8], score: 0 });
     if (role == 'admin') {
         res.sendFile(path.join(__dirname, 'public/admin.html'));
     } else if (role == 'player') {
@@ -29,8 +31,9 @@ app.post('/game', (req, res) => {
 });
 
 io.on('connection', (socket) => {
-    console.log('A user connected');
     socket.emit('set username', { username: username });
+    socket.username = username;
+    console.log(`${socket.username} connected`);
     io.emit('players list', players);
     socket.on('mouse', (data) => {
         socket.broadcast.emit('mouse', data);
@@ -38,6 +41,15 @@ io.on('connection', (socket) => {
     socket.on('chat message', data => {
         io.emit('chat message', data);
     });
+    socket.on('disconnect', () => {
+        console.log(players);
+        players = players.filter(function (player) {
+            return player.username != socket.username;
+        });
+        console.log(players);
+        io.emit('players list', players);
+        socket.broadcast.emit('player left', socket.username);
+    })
 });
 
 http.listen(port, () => {

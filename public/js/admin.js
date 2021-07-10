@@ -9,7 +9,7 @@ var form = document.getElementById('form');
 var input = document.getElementById('input');
 var chatlist = document.getElementById('chatlist');
 var scoreboard = document.getElementById('scoreboard');
-var players;
+var players = [];
 var currentNumPlayers = 0;
 
 function setup() {
@@ -119,23 +119,31 @@ socket.on('set username', function (username) {
 });
 
 socket.on('players list', function (data) {
-    players = data;
-    for (var i = currentNumPlayers; i < players.length; i++) {
-        var newPlayer = document.createElement('div');
-        newPlayer.textContent = players[i].username + ': ' + players[i].score;
-        newPlayer.classList.add('player');
-        if (i % 4 == 0) {
-            newPlayer.classList.add('red-player');
-        } else if (i % 4 == 1) {
-            newPlayer.classList.add('green-player');
-        } else if (i % 4 == 2) {
-            newPlayer.classList.add('blue-player');
-        } else if (i % 4 == 3) {
-            newPlayer.classList.add('purple-player');
+    for (var i = 0; i < data.length; i++) {
+        if (!players.find(function (player) {
+            return player.username == data[i].username && player.color == data[i].color && player.score == data[i].score;
+        })) {
+            var newPlayer = document.createElement('div');
+            newPlayer.id = data[i].username;
+            newPlayer.textContent = data[i].username + ': ' + data[i].score;
+            newPlayer.classList.add('player');
+            newPlayer.style.backgroundColor = data[i].color;
+            scoreboard.appendChild(newPlayer);
         }
-        scoreboard.appendChild(newPlayer);
     }
-    currentNumPlayers = players.length;
+    for (var i = 0; i < players.length; i++) {
+        if (!data.find(function (player) {
+            return player.username == players[i].username && player.color == players[i].color && player.score == players[i].score;
+        })) {
+            var remove = document.getElementById(players[i].username);
+            remove.remove();
+        }
+    }
+    players = data;
+});
+
+socket.on('player left', function (data) {
+    console.log(data);
 })
 
 form.addEventListener('submit', function (e) {
