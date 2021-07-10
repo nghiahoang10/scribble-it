@@ -22,14 +22,14 @@ function setup() {
 function newDrawing(data) {
     stroke(data.color);
     strokeWeight(data.strokeWidth);
-    line(data.x, data.y, data.px, data.py);
+    line(data.x * canvasWidth, data.y * canvasHeight, data.px * canvasWidth, data.py * canvasHeight);
 }
 
 function mouseDragged() {
     stroke(brushColor);
     strokeWeight(strokeWidth);
     line(mouseX, mouseY, pmouseX, pmouseY);
-    sendMouse(mouseX, mouseY, pmouseX, pmouseY);
+    sendMouse(mouseX / canvasWidth, mouseY / canvasHeight, pmouseX / canvasWidth, pmouseY / canvasHeight);
 }
 
 function sendMouse(x, y, px, py, width, height) {
