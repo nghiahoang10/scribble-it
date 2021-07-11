@@ -2,13 +2,21 @@ var socket = io();
 var brushColor = '#000';
 var strokeWidth = 5;
 var canvas;
+//drawing canvas
 var canvasWidth = document.getElementById('canvas').clientWidth;
 var canvasHeight = document.getElementById('canvas').clientHeight;
+//chat
 var form = document.getElementById('form');
 var input = document.getElementById('input');
 var chatbox = document.getElementById('chatbox');
 var chatlist = document.getElementById('chatlist');
+//scoreboard
 var scoreboard = document.getElementById('scoreboard');
+//setting for admin
+var roundSetting = document.getElementById('round-setting');
+var roundNumber = document.getElementById('round-number');
+var start = document.getElementById('start');
+
 var players = [];
 var myUsername;
 var myColor;
@@ -182,6 +190,14 @@ form.addEventListener('submit', function (e) {
     if (input.value) {
         socket.emit('chat message', { msg: input.value, sender: myUsername, color: myColor });
         input.value = '';
+    }
+});
+roundSetting.addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (roundNumber != 0) {
+        socket.emit('start game', { numberOfRound: roundNumber.value });
+        roundNumber.disabled = true;
+        start.disabled = true;
     }
 });
 document.getElementById('red').addEventListener('click', changeColor);

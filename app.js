@@ -6,7 +6,12 @@ const path = require('path');
 const bodyParser = require('body-parser');
 const port = process.env.PORT || 3000;
 
-const COLOR = ['#FF0000', '#00FF00', '#0000FF', '#800080', '#964B00', '#00b3ff', '#ff00c8', '#ff6600'];
+const COLORS = ['#FF0000', '#00FF00', '#0000FF', '#800080', '#964B00', '#00b3ff', '#ff00c8', '#ff6600'];
+const WORDS = [
+    ['ankle', 'arm', 'beard', 'cheek', 'chest', 'chin', 'elbow', 'forehead', 'heel', 'hip', 'knee', 'leg', 'mustache', 'shoulder', 'thumb', 'finger', 'tooth', 'neck', 'eye', 'lip', 'mouth', 'ear', 'nose', 'tongue', 'face'], //body
+    ['rice', 'noodle', 'ice cream', 'hamburger', 'cookie', 'donut', 'bagel', 'sandwich', 'chocolate', 'cake', 'egg', 'omelete', 'hot dog', 'pizza', 'bread', 'jam', 'spaghetti', 'sausage', 'sushi', 'yoghurt', 'taco', 'steak'], //food
+    ['chicken', 'dog', 'cat', 'mouse', 'lion', 'tiger', 'giraffe', 'crocodile', 'bird', 'eagle', 'cheetah', 'gorilla', 'monkey', 'fish', 'shark', 'whale', 'snake', 'python', 'goat', 'horse', 'sheep', 'cow', 'buffalo', 'spider', 'octopus', 'squid', 'bear', 'penguin', 'duck'], //animal
+    ['cristiano ronaldo', 'lionel messi', 'elon musk', 'tim cook', 'bill gates', 'steve jobs', 'pele', 'jeff bezos', 'mark zuckerberg', 'donald trump',]]; //celebrity
 var players = [];
 var username;
 var role;
@@ -23,7 +28,7 @@ app.get('/', (req, res) => {
 app.post('/game', (req, res) => {
     username = req.body.username;
     role = req.body.role;
-    color = COLOR[colorTrack++ % 8];
+    color = COLORS[colorTrack++ % 8];
     players.push({ username: username, color: color, score: 0 });
     if (role == 'admin') {
         res.sendFile(path.join(__dirname, 'public/admin.html'));
@@ -55,7 +60,10 @@ io.on('connection', (socket) => {
         console.log(players);
         io.emit('players list', players);
         socket.broadcast.emit('player left', socket.username);
-    })
+    });
+    socket.on('start game', data => {
+        console.log(data.numberOfRound);
+    });
 });
 
 http.listen(port, () => {
