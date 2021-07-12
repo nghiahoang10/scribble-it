@@ -12,6 +12,9 @@ const WORDS = [
     ['rice', 'noodle', 'ice cream', 'hamburger', 'cookie', 'donut', 'bagel', 'sandwich', 'chocolate', 'cake', 'egg', 'omelete', 'hot dog', 'pizza', 'bread', 'jam', 'spaghetti', 'sausage', 'sushi', 'yoghurt', 'taco', 'steak'], //food
     ['chicken', 'dog', 'cat', 'mouse', 'lion', 'tiger', 'giraffe', 'crocodile', 'bird', 'eagle', 'cheetah', 'gorilla', 'monkey', 'fish', 'shark', 'whale', 'snake', 'python', 'goat', 'horse', 'sheep', 'cow', 'buffalo', 'spider', 'octopus', 'squid', 'bear', 'penguin', 'duck'], //animal
     ['cristiano ronaldo', 'lionel messi', 'elon musk', 'tim cook', 'bill gates', 'steve jobs', 'pele', 'jeff bezos', 'mark zuckerberg', 'donald trump',]]; //celebrity
+var numRounds;
+var turn = 0;
+var run = false;
 var players = [];
 var username;
 var role;
@@ -40,16 +43,17 @@ app.post('/game', (req, res) => {
 io.on('connection', (socket) => {
     socket.emit('set username', { username: username, color: color });
     socket.username = username;
-    console.log(`${socket.username} connected`);
+    players[players.length - 1].id = socket.id;
+    console.log(`${socket.username} with ID: ${socket.id} connected`);
     io.emit('players list', players);
     io.emit('player joined', socket.username);
-    socket.on('mouse', (data) => {
+    socket.on('mouse', function (data) {
         socket.broadcast.emit('mouse', data);
     });
     /*data.sender: sender
     data.msg: message
     data.color: color of sender*/
-    socket.on('chat message', data => {
+    socket.on('chat message', function (data) {
         io.emit('chat message', data);
     });
     socket.on('disconnect', () => {
@@ -61,9 +65,20 @@ io.on('connection', (socket) => {
         io.emit('players list', players);
         socket.broadcast.emit('player left', socket.username);
     });
-    socket.on('start game', data => {
-        console.log(data.numberOfRound);
+    socket.on('game setting', function (data) {
+        numRounds = data.numberOfRound;
+        run = true;
     });
+    socket.on('run', function (data) {
+        if (run) {
+            if (turn == numRounds * players.length - 1) {
+                run = false;
+            }
+            io.to(players[turn++ % players.length].id).emit('draw', { words: WORDS[0][0] });
+            console.log(data);
+        }
+        //socket.broadcast.emit('guess', {});
+    })
 });
 
 http.listen(port, () => {

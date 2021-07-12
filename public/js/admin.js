@@ -16,10 +16,15 @@ var scoreboard = document.getElementById('scoreboard');
 var roundSetting = document.getElementById('round-setting');
 var roundNumber = document.getElementById('round-number');
 var start = document.getElementById('start');
+//topbar
+var clock = document.getElementById('clock');
+var round = document.getElementById('round');
 
 var players = [];
 var myUsername;
 var myColor;
+var isDrawer = false;
+var time = 120;
 
 function setup() {
     canvas = createCanvas(canvasWidth, canvasHeight);
@@ -183,7 +188,27 @@ socket.on('player left', function (data) {
     chatbox.scrollTo(0, chatbox.scrollHeight);
 });
 
+//backend countdown
+function countdown() {
+    return new Promise(
+        resolve => setTimeout(resolve, time * 1000)
+    );
+}
 
+socket.on('draw', async function (data) {
+    isDrawer = true;
+    document.getElementById('word').textContent = data.words;
+    //frontend countdown
+    for (let i = 1; i <= time; i++) {
+        setTimeout(() => {
+            clock.textContent = i;
+        }, i * 1000)
+    }
+    await countdown();
+    socket.emit('run', 'next');
+    isDrawer = false;
+    clock.textContent = '';
+});
 
 form.addEventListener('submit', function (e) {
     e.preventDefault();
@@ -195,9 +220,10 @@ form.addEventListener('submit', function (e) {
 roundSetting.addEventListener('submit', function (e) {
     e.preventDefault();
     if (roundNumber != 0) {
-        socket.emit('start game', { numberOfRound: roundNumber.value });
+        socket.emit('game setting', { numberOfRound: roundNumber.value });
         roundNumber.disabled = true;
         start.disabled = true;
+        socket.emit('run', 'game runs');
     }
 });
 document.getElementById('red').addEventListener('click', changeColor);
