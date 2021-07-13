@@ -226,6 +226,12 @@ socket.on('draw', async function (data) {
         }, i * 1000);
     }
     await countdown();
+    var newMsg = document.createElement('li');
+    newMsg.textContent = 'The word was \'' + data.words + '\'';
+    newMsg.classList.add('message');
+    newMsg.style.color = '#00FF00';
+    chatlist.appendChild(newMsg);
+    chatbox.scrollTo(0, chatbox.scrollHeight);
     isDrawer = false;
     clock.textContent = '';
     score = time;
@@ -258,6 +264,12 @@ socket.on('guess', async function (data) {
         }, i * 1000);
     }
     await countdown();
+    var newMsg = document.createElement('li');
+    newMsg.textContent = 'The word was \'' + data.words + '\'';
+    newMsg.classList.add('message');
+    newMsg.style.color = '#00FF00';
+    chatlist.appendChild(newMsg);
+    chatbox.scrollTo(0, chatbox.scrollHeight);
     clock.textContent = '';
     score = time;
 });
