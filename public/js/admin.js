@@ -18,6 +18,13 @@ var roundNumber = document.getElementById('round-number');
 var start = document.getElementById('start');
 //topbar
 var clock = document.getElementById('clock');
+var panelButtonSound = new Audio('../assets/PanelButtonSound.mp3');
+//Credit: sounds from skribbl.io
+var playerJoinedSound = new Audio('https://skribbl.io/res/sounds/join.ogg');
+var playerLeftSound = new Audio('https://skribbl.io/res/sounds/leave.ogg');
+var correctGuessSound = new Audio('https://skribbl.io/res/sounds/playerGuessed.ogg');
+var tickSound = new Audio('https://skribbl.io/res/sounds/tick.ogg');
+var roundStartSound = new Audio('https://skribbl.io/res/sounds/roundStart.ogg');
 
 var players = [];
 var myUsername;
@@ -64,6 +71,7 @@ function sendMouse(x, y, px, py, width, height) {
 
 function changeColor(event) {
     var source = event.target;
+    panelButtonSound.play();
     document.getElementById('red').classList.remove('clicked');
     document.getElementById('yellow').classList.remove('clicked');
     document.getElementById('blue').classList.remove('clicked');
@@ -97,6 +105,7 @@ function changeColor(event) {
 
 function changeStrokeWidth(event) {
     var source = event.target;
+    panelButtonSound.play();
     document.getElementById('small').classList.remove('clicked');
     document.getElementById('medium').classList.remove('clicked');
     document.getElementById('large').classList.remove('clicked');
@@ -174,6 +183,7 @@ socket.on('players list', function (data) {
 
 /*data: username of joined player*/
 socket.on('player joined', function (data) {
+    playerJoinedSound.play();
     var signal = document.createElement('li');
     signal.textContent = data + ' joined';
     signal.classList.add('joined')
@@ -183,6 +193,7 @@ socket.on('player joined', function (data) {
 
 /*data: username of left player*/
 socket.on('player left', function (data) {
+    playerLeftSound.play();
     var signal = document.createElement('li');
     signal.textContent = data + ' left';
     signal.classList.add('left')
@@ -201,6 +212,7 @@ function countdown() {
   data.currentRound: the current round to be displayed on the top bar
   data.maxRound: the current round to be displayed on the the topbar*/
 socket.on('draw', async function (data) {
+    roundStartSound.play();
     isDrawer = true;
     document.getElementById('word').textContent = data.words;
     document.getElementById('panel').style.visibility = 'visible';
@@ -210,9 +222,12 @@ socket.on('draw', async function (data) {
     //frontend countdown
     for (let i = 1; i <= time; i++) {
         setTimeout(() => {
-            clock.textContent = i;
+            clock.textContent = time - i;
+            if (time - i <= 10) {
+                tickSound.play();
+            }
             score--
-        }, i * 1000)
+        }, i * 1000);
     }
     await countdown();
     isDrawer = false;
@@ -222,6 +237,7 @@ socket.on('draw', async function (data) {
 });
 
 socket.on('guess', async function (data) {
+    roundStartSound.play();
     isDrawer = false;
     var hint = '';
     document.getElementById('panel').style.visibility = 'hidden';
@@ -238,9 +254,12 @@ socket.on('guess', async function (data) {
     document.getElementById('word').textContent = hint;
     for (let i = 1; i <= time; i++) {
         setTimeout(() => {
-            clock.textContent = i;
+            clock.textContent = time - i;
+            if (time - i <= 10) {
+                tickSound.play();
+            }
             score--;
-        }, i * 1000)
+        }, i * 1000);
     }
     await countdown();
     clock.textContent = '';
@@ -249,6 +268,7 @@ socket.on('guess', async function (data) {
 
 /*data.word: the word will be displayed to the players if their guesses are correct*/
 socket.on('correct', function (data) {
+    correctGuessSound.play();
     document.getElementById('word').textContent = data.word;
     var newMsg = document.createElement('li');
     newMsg.textContent = 'You guessed the word!';
@@ -260,6 +280,7 @@ socket.on('correct', function (data) {
 
 /*data.sender: the player that guessed the word correctly to be displayed in the chatbox*/
 socket.on('announcement', function (data) {
+    correctGuessSound.play();
     var newMsg = document.createElement('li');
     newMsg.textContent = `${data.sender} guessed the word!`;
     newMsg.classList.add('message');

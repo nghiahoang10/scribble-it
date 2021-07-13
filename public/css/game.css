@@ -44,6 +44,7 @@ table {
 * {
 	box-shadow: none;
 	border: none;
+	font-family: 'Noto Sans KR', sans-serif;
 }
 
 body {
@@ -175,7 +176,7 @@ h1 {
 	top: 24vh;
 	right: 1vw; */
 	margin-left: 20px;
-	width: 15vw;
+	width: 17vw;
 	height: 60vh;
 }
 
@@ -197,7 +198,7 @@ h1 {
 	padding: 4px;
 	/* position: fixed; */
 	/* bottom: 16vh; */
-	width: 15vw;
+	width: 17vw;
 	font-size: 20px;
 	margin-top: 10px;
 	border: 2px solid black;
@@ -240,7 +241,7 @@ h1 {
 	/* position: fixed;
 	left: 1vw;
 	top: 24vh; */
-	width: 15vw;
+	width: 17vw;
 	height: 60vh;
 	overflow: auto;
 	border: 2px solid black;
