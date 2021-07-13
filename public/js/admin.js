@@ -18,7 +18,6 @@ var roundNumber = document.getElementById('round-number');
 var start = document.getElementById('start');
 //topbar
 var clock = document.getElementById('clock');
-var round = document.getElementById('round');
 
 var players = [];
 var myUsername;
@@ -201,6 +200,7 @@ socket.on('draw', async function (data) {
     isDrawer = true;
     document.getElementById('word').textContent = data.words;
     document.getElementById('panel').style.visibility = 'visible';
+    document.getElementById('round').textContent = 'Round ' + data.currentRound + ' of ' + data.maxRound;
     canvas.clear();
     canvas.background('FFF');
     //frontend countdown
@@ -218,6 +218,7 @@ socket.on('draw', async function (data) {
 socket.on('guess', async function (data) {
     var hint = '';
     document.getElementById('panel').style.visibility = 'hidden';
+    document.getElementById('round').textContent = 'Round ' + data.currentRound + ' of ' + data.maxRound;
     canvas.clear();
     canvas.background('FFF');
     for (let i = 0; i < data.words.length; i++) {

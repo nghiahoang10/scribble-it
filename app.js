@@ -66,6 +66,7 @@ io.on('connection', (socket) => {
         socket.broadcast.emit('player left', socket.username);
         if (players.length == 0) {
             run = false;
+            turn = 0;
         }
     });
     socket.on('game setting', function (data) {
@@ -77,14 +78,19 @@ io.on('connection', (socket) => {
             if (turn == numRounds * players.length - 1) {
                 run = false;
             }
+            var row = Math.floor(Math.random() * WORDS.length);
+            var column = Math.floor(Math.random() * WORDS[row].length);
+            var word = WORDS[row][column];
             var sockets = await io.fetchSockets();
             var currentDrawerId = players[turn++ % players.length].id;
-            io.to(currentDrawerId).emit('draw', { words: WORDS[0][0] });
+            var round = Math.floor((turn - 1) / players.length) + 1;
+            io.to(currentDrawerId).emit('draw', { words: word, currentRound: round, maxRound: numRounds });
             for (var socket of sockets) {
                 if (socket.id != currentDrawerId) {
-                    io.to(socket.id).emit('guess', { words: WORDS[0][0] });
+                    io.to(socket.id).emit('guess', { words: word, currentRound: round, maxRound: numRounds });
                 }
             }
+            console.log(`Round ${round}`);
             console.log(`Turn ${turn}`);
         }
     })
