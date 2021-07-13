@@ -24,6 +24,7 @@ var myUsername;
 var myColor;
 var isDrawer = false;
 var time = 60;
+var score = time;
 
 function setup() {
     canvas = createCanvas(canvasWidth, canvasHeight);
@@ -196,6 +197,9 @@ function countdown() {
     );
 }
 
+/*data.words: the chosen word that players need to guess
+  data.currentRound: the current round to be displayed on the top bar
+  data.maxRound: the current round to be displayed on the the topbar*/
 socket.on('draw', async function (data) {
     isDrawer = true;
     document.getElementById('word').textContent = data.words;
@@ -207,15 +211,18 @@ socket.on('draw', async function (data) {
     for (let i = 1; i <= time; i++) {
         setTimeout(() => {
             clock.textContent = i;
+            score--
         }, i * 1000)
     }
     await countdown();
     isDrawer = false;
     clock.textContent = '';
-    socket.emit('run', 'next');
+    score = time;
+    socket.emit('running', 'next');
 });
 
 socket.on('guess', async function (data) {
+    isDrawer = false;
     var hint = '';
     document.getElementById('panel').style.visibility = 'hidden';
     document.getElementById('round').textContent = 'Round ' + data.currentRound + ' of ' + data.maxRound;
@@ -232,16 +239,46 @@ socket.on('guess', async function (data) {
     for (let i = 1; i <= time; i++) {
         setTimeout(() => {
             clock.textContent = i;
+            score--;
         }, i * 1000)
     }
     await countdown();
     clock.textContent = '';
+    score = time;
+});
+
+/*data.word: the word will be displayed to the players if their guesses are correct*/
+socket.on('correct', function (data) {
+    document.getElementById('word').textContent = data.word;
+    var newMsg = document.createElement('li');
+    newMsg.textContent = 'You guessed the word!';
+    newMsg.classList.add('message');
+    newMsg.style.color = '#00ff00';
+    chatlist.appendChild(newMsg);
+    chatbox.scrollTo(0, chatbox.scrollHeight);
+});
+
+/*data.sender: the player that guessed the word correctly to be displayed in the chatbox*/
+socket.on('announcement', function (data) {
+    var newMsg = document.createElement('li');
+    newMsg.textContent = `${data.sender} guessed the word!`;
+    newMsg.classList.add('message');
+    newMsg.style.color = '#00ff00';
+    chatlist.appendChild(newMsg);
+    chatbox.scrollTo(0, chatbox.scrollHeight);
+});
+
+/*data.newScore: new score of the player that has the correct guess
+  data.id: id of the player that has the correct guess*/
+socket.on('update score', function (data) {
+    let player = players.find(player => player.id == data.id);
+    document.getElementById(player.username).textContent = player.username + ': ' + data.newScore;
 })
 
 form.addEventListener('submit', function (e) {
     e.preventDefault();
     if (input.value) {
-        socket.emit('chat message', { msg: input.value, sender: myUsername, color: myColor });
+        socket.emit('chat message', { msg: input.value, sender: myUsername, color: myColor, isCurrentDrawer: isDrawer, score: score });
         input.value = '';
     }
 });
@@ -251,7 +288,7 @@ roundSetting.addEventListener('submit', function (e) {
         socket.emit('game setting', { numberOfRound: roundNumber.value });
         roundNumber.disabled = true;
         start.disabled = true;
-        socket.emit('run', '');
+        socket.emit('running', '');
     }
 });
 document.getElementById('red').addEventListener('click', changeColor);

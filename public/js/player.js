@@ -12,10 +12,18 @@ var chatbox = document.getElementById('chatbox');
 var chatlist = document.getElementById('chatlist');
 //scoreboard
 var scoreboard = document.getElementById('scoreboard');
+//setting for admin
+var roundSetting = document.getElementById('round-setting');
+var roundNumber = document.getElementById('round-number');
+var start = document.getElementById('start');
+//topbar
+var clock = document.getElementById('clock');
 
 var players = [];
 var myUsername;
 var myColor;
+var isDrawer = false;
+var time = 60;
 
 function setup() {
     canvas = createCanvas(canvasWidth, canvasHeight);
@@ -31,10 +39,12 @@ function newDrawing(data) {
 }
 
 function mouseDragged() {
-    stroke(brushColor);
-    strokeWeight(strokeWidth);
-    line(mouseX, mouseY, pmouseX, pmouseY);
-    sendMouse(mouseX / canvasWidth, mouseY / canvasHeight, pmouseX / canvasWidth, pmouseY / canvasHeight);
+    if (isDrawer) {
+        stroke(brushColor);
+        strokeWeight(strokeWidth);
+        line(mouseX, mouseY, pmouseX, pmouseY);
+        sendMouse(mouseX / canvasWidth, mouseY / canvasHeight, pmouseX / canvasWidth, pmouseY / canvasHeight);
+    }
 }
 
 function sendMouse(x, y, px, py, width, height) {
@@ -138,7 +148,7 @@ socket.on('set username', function (data) {
   data[i].color: assigned color of player i
   data[i].score: assigned score of player i*/
 socket.on('players list', function (data) {
-    for (var i = 0; i < data.length; i++) {
+    for (let i = 0; i < data.length; i++) {
         if (!players.find(function (player) {
             return player.username == data[i].username && player.color == data[i].color && player.score == data[i].score;
         })) {
@@ -150,7 +160,7 @@ socket.on('players list', function (data) {
             scoreboard.appendChild(newPlayer);
         }
     }
-    for (var i = 0; i < players.length; i++) {
+    for (let i = 0; i < players.length; i++) {
         if (!data.find(function (player) {
             return player.username == players[i].username && player.color == players[i].color && player.score == players[i].score;
         })) {
@@ -179,12 +189,84 @@ socket.on('player left', function (data) {
     chatbox.scrollTo(0, chatbox.scrollHeight);
 });
 
+//backend countdown
+function countdown() {
+    return new Promise(
+        resolve => setTimeout(resolve, time * 1000)
+    );
+}
 
+/*data.words: the chosen word that players need to guess
+  data.currentRound: the current round to be displayed on the top bar
+  data.maxRound: the current round to be displayed on the the topbar*/
+socket.on('draw', async function (data) {
+    isDrawer = true;
+    document.getElementById('word').textContent = data.words;
+    document.getElementById('panel').style.visibility = 'visible';
+    document.getElementById('round').textContent = 'Round ' + data.currentRound + ' of ' + data.maxRound;
+    canvas.clear();
+    canvas.background('FFF');
+    //frontend countdown
+    for (let i = 1; i <= time; i++) {
+        setTimeout(() => {
+            clock.textContent = i;
+        }, i * 1000)
+    }
+    await countdown();
+    isDrawer = false;
+    clock.textContent = '';
+    socket.emit('running', 'next');
+});
+
+socket.on('guess', async function (data) {
+    isDrawer = false;
+    var hint = '';
+    document.getElementById('panel').style.visibility = 'hidden';
+    document.getElementById('round').textContent = 'Round ' + data.currentRound + ' of ' + data.maxRound;
+    canvas.clear();
+    canvas.background('FFF');
+    for (let i = 0; i < data.words.length; i++) {
+        if (data.words[i] != ' ') {
+            hint += '_';
+        } else {
+            hint += ' ';
+        }
+    }
+    document.getElementById('word').textContent = hint;
+    for (let i = 1; i <= time; i++) {
+        setTimeout(() => {
+            clock.textContent = i;
+        }, i * 1000)
+    }
+    await countdown();
+    clock.textContent = '';
+});
+
+/*data.word: the word will be displayed to the players if their guesses are correct*/
+socket.on('correct', function (data) {
+    document.getElementById('word').textContent = data.word;
+    var newMsg = document.createElement('li');
+    newMsg.textContent = 'You guessed the word!';
+    newMsg.classList.add('message');
+    newMsg.style.color = '#00ff00';
+    chatlist.appendChild(newMsg);
+    chatbox.scrollTo(0, chatbox.scrollHeight);
+});
+
+/*data.sender: the player that guessed the word correctly to be displayed in the chatbox*/
+socket.on('announcement', function (data) {
+    var newMsg = document.createElement('li');
+    newMsg.textContent = `${data.sender} guessed the word!`;
+    newMsg.classList.add('message');
+    newMsg.style.color = '#00ff00';
+    chatlist.appendChild(newMsg);
+    chatbox.scrollTo(0, chatbox.scrollHeight);
+})
 
 form.addEventListener('submit', function (e) {
     e.preventDefault();
     if (input.value) {
-        socket.emit('chat message', { msg: input.value, sender: myUsername, color: myColor });
+        socket.emit('chat message', { msg: input.value, sender: myUsername, color: myColor, isCurrentDrawer: isDrawer });
         input.value = '';
     }
 });

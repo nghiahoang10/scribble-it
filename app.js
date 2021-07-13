@@ -14,7 +14,8 @@ const WORDS = [
     ['cristiano ronaldo', 'lionel messi', 'elon musk', 'tim cook', 'bill gates', 'steve jobs', 'pele', 'jeff bezos', 'mark zuckerberg', 'donald trump',]]; //celebrity
 var numRounds;
 var turn = 0;
-var run = false;
+var running = false;
+var currentWord;
 var players = [];
 var username;
 var role;
@@ -52,9 +53,26 @@ io.on('connection', (socket) => {
     });
     /*data.sender: sender
     data.msg: message
-    data.color: color of sender*/
+    data.color: color of sender
+    data.isCurrentDrawer: current role in the turn
+    data.score: the score of the player in case the player has the correct guess*/
     socket.on('chat message', function (data) {
-        io.emit('chat message', data);
+        if (!data.isCurrentDrawer && running) {
+            if (data.msg == currentWord) {
+                if (!socket.correct) {
+                    socket.correct = true;
+                    socket.emit('correct', { word: currentWord });
+                    socket.broadcast.emit('announcement', { sender: data.sender });
+                    let player = players.find(player => player.id == socket.id);
+                    player.score += data.score;
+                    io.emit('update score', { newScore: player.score, id: player.id });
+                }
+            } else {
+                io.emit('chat message', data);
+            }
+        } else {
+            io.emit('chat message', data);
+        }
     });
     socket.on('disconnect', () => {
         console.log(players);
@@ -65,27 +83,31 @@ io.on('connection', (socket) => {
         io.emit('players list', players);
         socket.broadcast.emit('player left', socket.username);
         if (players.length == 0) {
-            run = false;
+            running = false;
             turn = 0;
         }
     });
+    /*data.numberOfRound: number of round of the game*/
     socket.on('game setting', function (data) {
         numRounds = data.numberOfRound;
-        run = true;
+        running = true;
     });
-    socket.on('run', async function (data) {
-        if (run) {
+    /*minor*/
+    socket.on('running', async function (data) {
+        if (running) {
             if (turn == numRounds * players.length - 1) {
-                run = false;
+                running = false;
             }
             var row = Math.floor(Math.random() * WORDS.length);
             var column = Math.floor(Math.random() * WORDS[row].length);
             var word = WORDS[row][column];
+            currentWord = word;
             var sockets = await io.fetchSockets();
             var currentDrawerId = players[turn++ % players.length].id;
             var round = Math.floor((turn - 1) / players.length) + 1;
             io.to(currentDrawerId).emit('draw', { words: word, currentRound: round, maxRound: numRounds });
             for (var socket of sockets) {
+                socket.correct = false;
                 if (socket.id != currentDrawerId) {
                     io.to(socket.id).emit('guess', { words: word, currentRound: round, maxRound: numRounds });
                 }
@@ -93,7 +115,7 @@ io.on('connection', (socket) => {
             console.log(`Round ${round}`);
             console.log(`Turn ${turn}`);
         }
-    })
+    });
 });
 
 http.listen(port, () => {
