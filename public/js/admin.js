@@ -24,7 +24,7 @@ var players = [];
 var myUsername;
 var myColor;
 var isDrawer = false;
-var time = 120;
+var time = 60;
 
 function setup() {
     canvas = createCanvas(canvasWidth, canvasHeight);
@@ -40,10 +40,12 @@ function newDrawing(data) {
 }
 
 function mouseDragged() {
-    stroke(brushColor);
-    strokeWeight(strokeWidth);
-    line(mouseX, mouseY, pmouseX, pmouseY);
-    sendMouse(mouseX / canvasWidth, mouseY / canvasHeight, pmouseX / canvasWidth, pmouseY / canvasHeight);
+    if (isDrawer) {
+        stroke(brushColor);
+        strokeWeight(strokeWidth);
+        line(mouseX, mouseY, pmouseX, pmouseY);
+        sendMouse(mouseX / canvasWidth, mouseY / canvasHeight, pmouseX / canvasWidth, pmouseY / canvasHeight);
+    }
 }
 
 function sendMouse(x, y, px, py, width, height) {
@@ -147,7 +149,7 @@ socket.on('set username', function (data) {
   data[i].color: assigned color of player i
   data[i].score: assigned score of player i*/
 socket.on('players list', function (data) {
-    for (var i = 0; i < data.length; i++) {
+    for (let i = 0; i < data.length; i++) {
         if (!players.find(function (player) {
             return player.username == data[i].username && player.color == data[i].color && player.score == data[i].score;
         })) {
@@ -159,7 +161,7 @@ socket.on('players list', function (data) {
             scoreboard.appendChild(newPlayer);
         }
     }
-    for (var i = 0; i < players.length; i++) {
+    for (let i = 0; i < players.length; i++) {
         if (!data.find(function (player) {
             return player.username == players[i].username && player.color == players[i].color && player.score == players[i].score;
         })) {
@@ -198,6 +200,9 @@ function countdown() {
 socket.on('draw', async function (data) {
     isDrawer = true;
     document.getElementById('word').textContent = data.words;
+    document.getElementById('panel').style.visibility = 'visible';
+    canvas.clear();
+    canvas.background('FFF');
     //frontend countdown
     for (let i = 1; i <= time; i++) {
         setTimeout(() => {
@@ -205,10 +210,32 @@ socket.on('draw', async function (data) {
         }, i * 1000)
     }
     await countdown();
-    socket.emit('run', 'next');
     isDrawer = false;
     clock.textContent = '';
+    socket.emit('run', 'next');
 });
+
+socket.on('guess', async function (data) {
+    var hint = '';
+    document.getElementById('panel').style.visibility = 'hidden';
+    canvas.clear();
+    canvas.background('FFF');
+    for (let i = 0; i < data.words.length; i++) {
+        if (data.words[i] != ' ') {
+            hint += '_';
+        } else {
+            hint += ' ';
+        }
+    }
+    document.getElementById('word').textContent = hint;
+    for (let i = 1; i <= time; i++) {
+        setTimeout(() => {
+            clock.textContent = i;
+        }, i * 1000)
+    }
+    await countdown();
+    clock.textContent = '';
+})
 
 form.addEventListener('submit', function (e) {
     e.preventDefault();
@@ -223,7 +250,7 @@ roundSetting.addEventListener('submit', function (e) {
         socket.emit('game setting', { numberOfRound: roundNumber.value });
         roundNumber.disabled = true;
         start.disabled = true;
-        socket.emit('run', 'game runs');
+        socket.emit('run', '');
     }
 });
 document.getElementById('red').addEventListener('click', changeColor);

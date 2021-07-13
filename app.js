@@ -64,20 +64,29 @@ io.on('connection', (socket) => {
         console.log(players);
         io.emit('players list', players);
         socket.broadcast.emit('player left', socket.username);
+        if (players.length == 0) {
+            run = false;
+        }
     });
     socket.on('game setting', function (data) {
         numRounds = data.numberOfRound;
         run = true;
     });
-    socket.on('run', function (data) {
+    socket.on('run', async function (data) {
         if (run) {
             if (turn == numRounds * players.length - 1) {
                 run = false;
             }
-            io.to(players[turn++ % players.length].id).emit('draw', { words: WORDS[0][0] });
-            console.log(data);
+            var sockets = await io.fetchSockets();
+            var currentDrawerId = players[turn++ % players.length].id;
+            io.to(currentDrawerId).emit('draw', { words: WORDS[0][0] });
+            for (var socket of sockets) {
+                if (socket.id != currentDrawerId) {
+                    io.to(socket.id).emit('guess', { words: WORDS[0][0] });
+                }
+            }
+            console.log(`Turn ${turn}`);
         }
-        //socket.broadcast.emit('guess', {});
     })
 });
 
