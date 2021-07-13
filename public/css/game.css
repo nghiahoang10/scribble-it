@@ -263,6 +263,7 @@ h1 {
 	align-items: center;
 	height: 10vh;
 	border: 2px solid black;
+	border-radius: 10px;
 	margin-bottom: 20px;
 	margin-left: 2vw;
 	margin-right: 2vw;
