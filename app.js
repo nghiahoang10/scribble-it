@@ -16,6 +16,7 @@ var numRounds;
 var turn = 0;
 var running = false;
 var currentWord;
+var numOfCorrectGuesses = 0;
 var players = [];
 var username;
 var role;
@@ -65,6 +66,7 @@ io.on('connection', (socket) => {
                     socket.broadcast.emit('announcement', { sender: data.sender });
                     let player = players.find(player => player.id == socket.id);
                     player.score += data.score;
+                    numOfCorrectGuesses++;
                     io.emit('update score', { newScore: player.score, id: player.id });
                 }
             } else {
@@ -98,6 +100,7 @@ io.on('connection', (socket) => {
             if (turn == numRounds * players.length - 1) {
                 running = false;
             }
+            numOfCorrectGuesses = 0;
             var row = Math.floor(Math.random() * WORDS.length);
             var column = Math.floor(Math.random() * WORDS[row].length);
             var word = WORDS[row][column];

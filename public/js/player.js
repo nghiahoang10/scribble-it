@@ -225,6 +225,7 @@ socket.on('draw', async function (data) {
             score--
         }, i * 1000);
     }
+    //backend countdown
     await countdown();
     var newMsg = document.createElement('li');
     newMsg.textContent = 'The word was \'' + data.words + '\'';
@@ -254,6 +255,7 @@ socket.on('guess', async function (data) {
         }
     }
     document.getElementById('word').textContent = hint;
+    //frontend countdown
     for (let i = 1; i <= time; i++) {
         setTimeout(() => {
             clock.textContent = time - i;
@@ -263,6 +265,7 @@ socket.on('guess', async function (data) {
             score--;
         }, i * 1000);
     }
+    //backend countdown
     await countdown();
     var newMsg = document.createElement('li');
     newMsg.textContent = 'The word was \'' + data.words + '\'';
@@ -302,7 +305,7 @@ socket.on('announcement', function (data) {
 socket.on('update score', function (data) {
     let player = players.find(player => player.id == data.id);
     document.getElementById(player.username).textContent = player.username + ': ' + data.newScore;
-})
+});
 
 form.addEventListener('submit', function (e) {
     e.preventDefault();
